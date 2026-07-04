@@ -183,6 +183,20 @@ WHERE product_rank = 1;
 -- Return: customer_id, customer_name.
 -- Hint: Compare count(distinct store_id) per customer to (select count(*) from stores).
 
+select 
+	c.customer_id,
+    c.customer_name
+from customers 
+where (
+	select
+    customer_id
+    from customers
+    where count(distinct store_id)
+);
+  
+
+
+
 -- =========================================================
 -- Q6) Window function: Time between orders per customer (PAID only)
 -- =========================================================
