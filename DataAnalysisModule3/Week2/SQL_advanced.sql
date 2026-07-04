@@ -126,6 +126,55 @@ order by customer_total_spend desc;
 -- Sort by store_name.
 
 
+with product_revenue as (
+select
+	sum(oi.quantity * p.price) 
+    from order_items oi
+    join p.product_id on oi.product_id
+)
+select 
+	* from product_revenue,
+    s.name as store_name,
+    p.name as product_name,
+    ca.name as category_name,
+    sum(oi.quantity * p.price) as revenue_per_product_per_store
+    from stores s
+    join products on oi.product_id = p.product_id
+    join categories ca on p.category_id = ca.category_id
+row_number(store_id)
+over(
+	partition by store_id
+    order by store_name
+    limit 1
+);
+
+
+/*
+This is a corrected version but it's not running either.
+WITH product_revenue AS (
+    SELECT 
+        s.store_id,
+        s.name AS store_name,
+        p.product_id,
+        p.name AS product_name,
+        ca.name AS category_name,
+        SUM(oi.quantity * p.price) AS revenue_per_product_per_store,
+        ROW_NUMBER() OVER (
+            PARTITION BY s.store_id 
+            ORDER BY SUM(oi.quantity * p.price) DESC
+        ) AS product_rank
+    FROM stores s
+    JOIN order_items oi ON s.store_id = oi.store_id
+    JOIN products p ON oi.product_id = p.product_id
+    JOIN categories ca ON p.category_id = ca.category_id
+    GROUP BY s.store_id, s.name, p.product_id, p.name, ca.name
+)
+SELECT *
+FROM product_revenue
+WHERE product_rank = 1;
+*/
+
+
 
 -- =========================================================
 -- Q5) Subquery: Customers who have ordered from ALL stores (PAID only)
